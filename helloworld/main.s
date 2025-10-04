@@ -1,12 +1,14 @@
+# vim:filetype=asmh
+
 .global _start
 
 helloworld:
     .ascii "hello world\n"
 
-# t1 = int i
-# t2 = < length
-# t3 = helloworld[i]
-loop_body:
+_start:
+    li t2, 12
+    li t1, 0
+L_loop_body:
     addi sp, sp, -2
 
     la t3, helloworld
@@ -34,14 +36,7 @@ loop_body:
     addi sp, sp, 2
 
     addi t1, t1, 1
-    blt t1, t2, loop_body
-
-    jalr zero, t6
-
-_start:
-    li t2, 12
-    li t1, 0
-    jal t6, loop_body
+    blt t1, t2, L_loop_body
 
     # exit
     li a7, 93
