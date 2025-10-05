@@ -35,6 +35,7 @@ ln -s ~/compilers/riscv riscv32-toolchain
 Compile and run
 
 ```sh
+mkdir build
 make
 ```
 
