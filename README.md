@@ -11,7 +11,7 @@ git clone https://github.com/riscv-collab/riscv-gnu-toolchain
 cd riscv-gnu-toolchain
 
 # build deps
-sudo pacman -Syu curl python3 libmpc mpfr gmp base-devel texinfo gperf patchutils bc zlib expat libslirp qemu-full clang llvm
+sudo pacman -Syu curl python3 libmpc mpfr gmp base-devel texinfo gperf patchutils bc zlib expat libslirp qemu-full clang llvm lld
 
 # put prefix to a directory which you own
 ./configure --prefix=/home/user/compilers/riscv32 --with-arch=rv32gc --with-abi=ilp32d
