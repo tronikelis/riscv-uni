@@ -9,13 +9,13 @@ QEMU = qemu-riscv32 -L riscv32-toolchain/sysroot
 .PHONY: all
 all: helloworld 01
 
-build/helloworld.o: helloworld/main.s
+build/helloworld.o: src/helloworld.s
 	$(CLANG) \
-	helloworld/main.s -o build/helloworld.o
+	src/helloworld.s -o build/helloworld.o
 
-build/01.o: 01/main.s
+build/01.o: src/01.s
 	$(CLANG) \
-	01/main.s -o build/01.o
+	src/01.s -o build/01.o
 
 .PHONY: helloworld
 helloworld: build/helloworld.o
