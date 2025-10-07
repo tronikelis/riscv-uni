@@ -37,7 +37,7 @@ helloworld: build/helloworld.o
 
 .PHONY: 02
 02: build/02.o
-	$(QEMU) build/02.o "one two three"
+	$(QEMU) build/02.o "one two three four five"
 
 .PHONY: clean
 clean:

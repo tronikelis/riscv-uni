@@ -8,6 +8,10 @@ _start:
     # argv
     lw s1, 8(sp)
     mv a0, s1
+    call print_string
+
+    li a0, 10
+    call print_char
 
     mv a0, s1
     call strlen
