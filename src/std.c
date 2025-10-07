@@ -28,14 +28,7 @@ void itoa(int num, char* buf) {
     arr_reverse(buf, i);
 }
 
-void print_reg(int reg) {
-    char buffer[32];
-    itoa(reg, buffer);
-
-    int len = strlen(buffer);
-    buffer[len] = '\n';
-    len++;
-
+void print(void* buffer, int len) {
     __asm__("li a7, 64\n"
             "li a0, 1\n"
             "mv a1, %0\n"
@@ -44,4 +37,25 @@ void print_reg(int reg) {
             :
             : "r"(buffer), "r"(len)
             : "a7", "a0", "a1", "a2");
+}
+
+void print_reg(int reg) {
+    char buffer[32];
+    itoa(reg, buffer);
+
+    int len = strlen(buffer);
+    buffer[len] = '\n';
+    len++;
+    print(buffer, len);
+}
+
+void print_string(char* str) {
+    int len = strlen(str);
+    print(str, len);
+}
+
+void print_char(char reg) {
+    char buffer[1];
+    buffer[0] = reg;
+    print(buffer, 1);
 }
