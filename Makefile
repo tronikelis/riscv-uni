@@ -13,7 +13,7 @@ CLANG = clang -target riscv32-unknown-linux-gnu \
 QEMU = qemu-riscv32 -L riscv32-toolchain/sysroot
 
 .PHONY: all
-all: helloworld 01 02 03
+all: helloworld 01 02 03 04
 
 build/helloworld.o: src/helloworld.s $(STD_C)
 	$(CLANG) \
@@ -31,6 +31,10 @@ build/03.o: src/03.s $(STD_C)
 	$(CLANG) \
 	src/03.s -o build/03.o
 
+build/04.o: src/04.s $(STD_C)
+	$(CLANG) \
+	src/04.s -o build/04.o
+
 .PHONY: helloworld
 helloworld: build/helloworld.o
 	$(QEMU) build/helloworld.o
@@ -46,6 +50,10 @@ helloworld: build/helloworld.o
 .PHONY: 03
 03: build/03.o
 	$(QEMU) build/03.o
+
+.PHONY: 04
+04: build/04.o
+	$(QEMU) build/04.o
 
 .PHONY: clean
 clean:

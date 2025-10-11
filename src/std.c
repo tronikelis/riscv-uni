@@ -59,3 +59,14 @@ void print_char(char reg) {
     buffer[0] = reg;
     print(buffer, 1);
 }
+
+void exit(int status) {
+    __asm__("li a7, 93\n"
+            "mv a0, %0\n"
+            "ecall\n"
+            :
+            : "r"(status)
+            : "a7", "a0");
+    for (;;) {
+    }
+}
