@@ -70,11 +70,6 @@ fn_math:
     mv ra, s11
     jalr zero, 0(ra)
 
-    
-
-
-    
-    
 fn_push:
     addi sp, sp, -4
     sw a0, 0(sp)
