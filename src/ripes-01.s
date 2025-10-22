@@ -73,7 +73,7 @@ skaiciuotiFormule:
 
     mv a0, t0
     lw ra, 0(sp)
-    addi sp, sp 16
+    addi sp, sp, 16
     ret
 
 push:
