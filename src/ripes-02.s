@@ -25,6 +25,14 @@ main:
     mv s1, a0
     li a1, 65
     call prideti_i_prieki
+
+    mv a0, s1
+    li a1, 48
+    call prideti_i_prieki
+
+    mv a0, s1
+    li a1, 49
+    call prideti_i_gala
     
     mv a0, s1
     call spausdinti_sarasa
@@ -33,9 +41,14 @@ main:
     li a0, 0
     ecall
 
-# struct node { prev: *node, next: *node, data: char }
+
+
+
+
+
 
 # push_front
+# struct node { prev: *node, next: *node, data: char }
 # a0: *list
 # a1: data (char)
 prideti_i_prieki:
@@ -95,6 +108,72 @@ L_push_front_end:
 
 
 
+
+
+# push_back
+# struct node { prev: *node, next: *node, data: char }
+# a0: *list
+# a1: data (char)
+prideti_i_gala:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+
+    # s1 = *list
+    # s2 = data
+    mv s1, a0
+    mv s2, a1
+
+    call skirti_atminti_mazgui
+    bnez a0, L_push_back
+    li a0, 0
+    j L_push_back_end
+
+L_push_back:
+    # a0 = *node
+
+    # init node
+    sw zero, 0(a0)
+    sw zero, 4(a0)
+    sb s2, 8(a0)
+    
+    # if non empty tail
+    lw t0, 4(s1)
+    bnez t0, L_push_back_non_empty_tail
+    # empty head / tail
+    # list.head = list.tail = *node
+    sw a0, 0(s1)
+    sw a0, 4(s1)
+    j L_push_back_end
+    
+L_push_back_non_empty_tail:
+    # a0 = *node
+    # s1 = *list
+    # s2 = data
+
+    # node.prev = list.tail
+    lw t0, 4(s1) # t0 = list.tail
+    sw t0, 0(a0)
+    # list.tail.next = node
+    sw a0, 4(t0) 
+    # list.tail = node
+    sw a0, 4(s1)
+    
+
+L_push_back_end:
+    lw ra, 0(sp)
+    lw s1, 4(sp)
+    lw s2, 8(sp)
+    addi sp, sp, 16
+    ret
+
+
+
+
+
+
+
 # create_list
 # returns struct { head: *node, tail: *node }
 saraso_sukurimas:
@@ -117,6 +196,8 @@ L_create_list_end:
     lw ra, 0(sp)
     addi sp, sp, 16
     ret
+
+
 
 
 
@@ -161,6 +242,9 @@ L_alloc_yesyes:
 
     
 
+
+
+
 # print_list
 # a0: *list
 spausdinti_sarasa:
@@ -189,4 +273,36 @@ L_print_loop_end:
     ret
 
 
+
+
+
+
+
+
+# print_list_backwards
+# a0: *list
+spausdinti_atbulai:
+    # t0 = list.tail / node
+    lw t0, 4(a0)
+
+    # while t0 != null:
+L_print_loop_back_start:
+    beqz t0, L_print_loop_back_end
+    
+    li a7, 11
+    lw a0, 8(t0)
+    ecall
+
+    li a7, 4
+    la a0, separator
+    ecall
+
+    # t0 = t0.prev
+    lw t0, 0(t0)
+    j L_print_loop_back_start
+L_print_loop_back_end:
+    li a7, 4
+    la a0, null_string
+    ecall
+    ret
 
