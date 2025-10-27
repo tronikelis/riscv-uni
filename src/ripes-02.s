@@ -33,10 +33,10 @@ main:
     mv a0, s1
     li a1, 49
     call prideti_i_gala
-    
+
     mv a0, s1
     call spausdinti_sarasa
-    
+
     li a7, 93
     li a0, 0
     ecall
@@ -74,7 +74,7 @@ L_push_front:
     sw zero, 0(a0)
     sw zero, 4(a0)
     sb s2, 8(a0)
-    
+
     # if non empty head
     lw t0, 0(s1)
     bnez t0, L_push_front_non_empty_head
@@ -83,7 +83,7 @@ L_push_front:
     sw a0, 0(s1)
     sw a0, 4(s1)
     j L_push_front_end
-    
+
 L_push_front_non_empty_head:
     # a0 = *node
     # s1 = *list
@@ -93,10 +93,10 @@ L_push_front_non_empty_head:
     lw t0, 0(s1) # t0 = list.head
     sw t0, 4(a0)
     # list.head.prev = node
-    sw a0, 0(t0) 
+    sw a0, 0(t0)
     # list.head = node
     sw a0, 0(s1)
-    
+
 
 L_push_front_end:
     lw ra, 0(sp)
@@ -137,7 +137,7 @@ L_push_back:
     sw zero, 0(a0)
     sw zero, 4(a0)
     sb s2, 8(a0)
-    
+
     # if non empty tail
     lw t0, 4(s1)
     bnez t0, L_push_back_non_empty_tail
@@ -146,7 +146,7 @@ L_push_back:
     sw a0, 0(s1)
     sw a0, 4(s1)
     j L_push_back_end
-    
+
 L_push_back_non_empty_tail:
     # a0 = *node
     # s1 = *list
@@ -156,10 +156,9 @@ L_push_back_non_empty_tail:
     lw t0, 4(s1) # t0 = list.tail
     sw t0, 0(a0)
     # list.tail.next = node
-    sw a0, 4(t0) 
+    sw a0, 4(t0)
     # list.tail = node
     sw a0, 4(s1)
-    
 
 L_push_back_end:
     lw ra, 0(sp)
@@ -168,6 +167,31 @@ L_push_back_end:
     addi sp, sp, 16
     ret
 
+
+
+
+# remove_node
+# a0: *list
+# a1: data (char)
+pasalinti_elementa:
+    # if list.head == null
+    lw t0, 0(a0)
+    bnez t0, L_remove_node_head_non_null
+    # null
+    ret
+
+L_remove_node_head_non_null:
+    # find node
+    #
+    # check if head
+    # if head check if head == tail
+    # else do middle
+    #
+    # check if tail
+    # if tail check if tail == head
+    # else do middle
+    #
+    # do middle
 
 
 
@@ -186,7 +210,7 @@ saraso_sukurimas:
     j L_create_list_end
 
 L_create_list:
-    # a0 = alloc(12) 
+    # a0 = alloc(12)
     # struct.0 = 0
     sw zero, 0(a0)
     # struct.1 = 0
@@ -211,7 +235,7 @@ skirti_atminti_mazgui:
     la t0, heap_ptr
     lw t0, 0(t0)
     la t1, heap_end
-    
+
     # first time init heap_ptr to heap
     bnez t0, L_alloc_init
     # heap_ptr = &heap
@@ -236,11 +260,11 @@ L_alloc_yesyes:
 
     mv a0, t3
     ret
-    
 
 
 
-    
+
+
 
 
 
@@ -254,7 +278,7 @@ spausdinti_sarasa:
     # while t0 != null:
 L_print_loop_start:
     beqz t0, L_print_loop_end
-    
+
     li a7, 11
     lw a0, 8(t0)
     ecall
@@ -288,7 +312,7 @@ spausdinti_atbulai:
     # while t0 != null:
 L_print_loop_back_start:
     beqz t0, L_print_loop_back_end
-    
+
     li a7, 11
     lw a0, 8(t0)
     ecall
