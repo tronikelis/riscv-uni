@@ -64,6 +64,7 @@ prideti_i_prieki:
 
     call skirti_atminti_mazgui
     bnez a0, L_push_front
+    # early return null alloc
     li a0, 0
     j L_push_front_end
 
@@ -127,6 +128,7 @@ prideti_i_gala:
 
     call skirti_atminti_mazgui
     bnez a0, L_push_back
+    # early return null alloc
     li a0, 0
     j L_push_back_end
 
@@ -206,6 +208,7 @@ saraso_sukurimas:
 
     call skirti_atminti_mazgui
     bnez a0, L_create_list
+    # early return null alloc
     li a0, 0
     j L_create_list_end
 
