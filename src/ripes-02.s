@@ -169,13 +169,68 @@ L_push_back_end:
     addi sp, sp, 16
     ret
 
+# find_node_index_by_data
+# a0: *list
+# a1: data
+rasti_pagal_reiksme:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    call find_node_by_data
+    mv a0, a1
+
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+
+
+
+# find_node_by_index
+# a0: *list
+# a1: index
+# returns *node that has a1 index
+rasti_pagal_pozicija:
+    # if a1 < 0
+    bltz, a1, L_find_node_by_index_end
+    # t0 = *node
+    # t1 = 0
+    lw t0, 0(s1)
+    li t1, 0
+L_find_node_by_index_loop_start:
+    # exit if null node
+    beqz t0, L_find_node_by_index_end
+
+    # if index == counter
+    bne t1, a1, L_find_node_by_index_loop_after
+    mv a0, t0
+    ret
+
+L_find_node_by_index_loop_after:
+    # node = node.next
+    lw t0, 4(t0)
+    # t1++
+    addi t1, t1, 1
+
+    j L_find_node_by_index_loop_start
+
+L_find_node_by_index_end:
+    li a0, 0
+    ret
+
+
+
+
+
 
 # a0: *list
 # a1: data
-# returns ptr to node
+# returns a0(ptr to node), a1(index, -1 if not found)
 find_node_by_data:
     # t0 = node
+    # t1 = 0
     lw t0, 0(a0)
+    li t1, 0
 L_find_by_data_loop_start:
     beqz t0, L_find_by_data_loop_end
 
@@ -183,14 +238,18 @@ L_find_by_data_loop_start:
     lbu t5, 8(t0)
     bne t5, a1, L_find_by_data_loop_after
     mv a0, t0
+    mv a1, t1
     ret
 L_find_by_data_loop_after:
     # node = node.next
     lw t0, 4(t0)
+    # t1++
+    addi t1, t1, 1
 
     j L_find_by_data_loop_start
 L_find_by_data_loop_end:
     li a0, 0
+    li a1, -1
     ret
 
 
