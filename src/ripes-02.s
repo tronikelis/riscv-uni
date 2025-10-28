@@ -278,7 +278,6 @@ L_remove_node:
     # s1 = *list
     lw t0, 0(s1) # t0 = list.head
     lw t1, 4(s1) # t1 = list.tail
-    # if list.head == list.tail == node
 
     # if list.head == node
     beq t0, a0, L_remove_node_remove_head
@@ -314,7 +313,7 @@ L_remove_node_remove_head:
     j L_remove_node_return
 
 L_remove_node_remove_tail:
-    # already tail, check for tail
+    # already tail, check for head
     beq t0, a0, L_remove_node_remove_single
     # tail with prev node
 
