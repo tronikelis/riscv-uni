@@ -5,7 +5,7 @@
 .data
 
 null_string:
-    .string "null"
+    .string "null\n"
 
 separator:
     .string " -> "
@@ -170,31 +170,113 @@ L_push_back_end:
     ret
 
 
+# a0: *list
+# a1: data
+# returns ptr to node
+find_node_by_data:
+    # t0 = node
+    lw t0, 0(a0)
+L_find_by_data_loop_start:
+    beqz t0, L_find_by_data_loop_end
+
+    # if t0.data == a1
+    lbu t5, 8(t0)
+    bne t5, a1, L_find_by_data_loop_after
+    mv a0, t0
+    ret
+L_find_by_data_loop_after:
+    # node = node.next
+    lw t0, 4(t0)
+
+    j L_find_by_data_loop_start
+L_find_by_data_loop_end:
+    li a0, 0
+    ret
+
+
+
 
 
 # remove_node
 # a0: *list
 # a1: data (char)
 pasalinti_elementa:
-    # if list.head == null
-    lw t0, 0(a0)
-    bnez t0, L_remove_node_head_non_null
-    # null
+    addi sp, sp, -16
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    # s1 = *list
+    mv s1, a0
+
+    call find_node_by_data
+    # a0 = *node
+    # if a0 == null
+    bnez a0, L_remove_node
+    j L_remove_node_return
+
+L_remove_node:
+    # a0 = *node
+    # s1 = *list
+    lw t0, 0(s1) # t0 = list.head
+    lw t1, 4(s1) # t1 = list.tail
+    # if list.head == list.tail == node
+
+    # if list.head == node
+    beq t0, a0, L_remove_node_remove_head
+    # if list.tail == node
+    beq t1, a0, L_remove_node_remove_tail
+
+L_remove_node_middle:
+    # node in middle
+
+    # t5 = node.prev
+    # t6 = node.next
+    lw t5, 0(a0)
+    lw t6, 4(a0)
+
+    # node.prev.next = node.next
+    sw t6, 4(t5)
+    # node.next.prev = node.prev
+    sw t5, 0(t6)
+
+    j L_remove_node_return
+
+L_remove_node_remove_head:
+    # already head, check for tail
+    beq t1, a0, L_remove_node_remove_single
+    # head with next node
+
+    # list.head = list.head.next
+    lw t0, 4(t0) # t0 = list.head.next
+    sw t0, 0(s1)
+    # list.head.prev = null
+    sw zero, 0(t0)
+
+    j L_remove_node_return
+
+L_remove_node_remove_tail:
+    # already tail, check for tail
+    beq t0, a0, L_remove_node_remove_single
+    # tail with prev node
+
+    # list.tail = list.tail.prev
+    lw t1, 0(t1) # t1 = list.tail.prev
+    sw t1, 4(s1)
+    # list.tail.next = null
+    sw zero, 4(t1)
+
+    j L_remove_node_return
+
+L_remove_node_remove_single:
+    # head == tail == node
+    sw zero, 0(s1)
+    sw zero, 4(s1)
+
+L_remove_node_return:
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
     ret
-
-L_remove_node_head_non_null:
-    # find node
-    #
-    # check if head
-    # if head check if head == tail
-    # else do middle
-    #
-    # check if tail
-    # if tail check if tail == head
-    # else do middle
-    #
-    # do middle
-
 
 
 
