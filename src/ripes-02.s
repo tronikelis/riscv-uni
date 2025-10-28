@@ -195,7 +195,7 @@ rasti_pagal_pozicija:
     bltz, a1, L_find_node_by_index_end
     # t0 = *node
     # t1 = 0
-    lw t0, 0(s1)
+    lw t0, 0(a0)
     li t1, 0
 L_find_node_by_index_loop_start:
     # exit if null node
@@ -227,7 +227,7 @@ L_find_node_by_index_end:
 # a1: data
 # returns a0(ptr to node), a1(index, -1 if not found)
 find_node_by_data:
-    # t0 = node
+    # t0 = *node
     # t1 = 0
     lw t0, 0(a0)
     li t1, 0
