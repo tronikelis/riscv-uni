@@ -43,6 +43,14 @@ build/06.o: src/06.s $(STD_C)
 	$(CLANG) \
 	src/06.s -o build/06.o
 
+build/komparch-03.o: src/komparch-03.s
+	$(CLANG) \
+	src/komparch-03.s -o build/komparch-03.o
+
+.PHONY: komparch-03
+komparch-03: build/komparch-03.o
+	$(QEMU) build/komparch-03.o "./src/komparch-03.txt"
+
 .PHONY: helloworld
 helloworld: build/helloworld.o
 	$(QEMU) build/helloworld.o
