@@ -11,6 +11,9 @@ newline_1:
 colon_space_2:
     .string ": "
 
+unique_numbers_8:
+    .string "unique: "
+
 .bss
 
 .align 4
@@ -61,10 +64,65 @@ L_read_loop_start:
     j L_read_loop_start
 
 L_read_loop_end:
+    call print_unique_numbers
     call print_frequencies
 
     li a0, 0
     call exit
+
+print_unique_numbers:
+    # loop through freq array, incrementing counter on non 0 values
+    addi sp, sp, -16
+    sw s2, 8(sp)
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    # s1 = i
+    li s1, 10
+    li s2, 0
+L_print_unique_numbers_loop_start:
+    addi s1, s1, -1
+    bltz s1, L_print_unique_numbers_end
+
+    # index
+    la t0, freq_arr_40
+    slli t1, s1, 2
+    add t0, t1, t0
+
+    lw a0, 0(t0)
+    # increment s2, if a0 non zero
+    beqz a0, L_print_unique_numbers_loop_start
+    
+    addi s2, s2, 1
+
+    j L_print_unique_numbers_loop_start
+    
+L_print_unique_numbers_end:
+    call print_unique_colon
+    mv a0, s2
+    call print_num
+    call print_newline
+
+    lw s2, 8(sp)
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+
+print_unique_colon:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, unique_numbers_8
+    li a2, 8
+    call write
+    
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+    
 
 # void ()
 print_frequencies:
