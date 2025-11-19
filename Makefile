@@ -47,7 +47,7 @@ build/komparch-03.o: src/komparch-03.s
 	$(CLANG) \
 	src/komparch-03.s -o build/komparch-03.o
 
-.PHONY: komparch-03
+.PHONY: komparch-03 $(STD_C)
 komparch-03: build/komparch-03.o
 	$(QEMU) build/komparch-03.o "./src/komparch-03.txt"
 
