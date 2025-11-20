@@ -14,6 +14,9 @@ colon_space_2:
 unique_numbers_8:
     .string "unique: "
 
+unknown_chars_15:
+    .string "unknown chars: "
+
 .bss
 
 .align 4
@@ -22,6 +25,9 @@ file_buffer_1024:
     .space 1024
 
 .data
+
+test_string_3:
+    .string "abc"
 
 freq_arr_40:
     .zero 40
@@ -64,11 +70,26 @@ L_read_loop_start:
     j L_read_loop_start
 
 L_read_loop_end:
+    call print_unknown_char_count
     call print_unique_numbers
     call print_frequencies
 
     li a0, 0
     call exit
+
+print_unknown_char_count:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    call print_unknown_chars_colon
+    lw a0, unknown_char_count
+    call print_num
+    call print_newline
+
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+    
 
 print_unique_numbers:
     # loop through freq array, incrementing counter on non 0 values
@@ -330,15 +351,14 @@ panic:
 # int (char* string)
 strlen:
     li t0, 0
-    mv t1, a0
 
 L_strlen_loop_start:
+    add t1, a0, t0
     lbu t2, 0(t1)
     # if string[i] != 0
     beqz t2, L_strlen_loop_end
 
     addi t0, t0, 1
-    addi t1, t1, 1
     j L_strlen_loop_start
 
 L_strlen_loop_end:
@@ -428,6 +448,9 @@ L_itoa_loop_start:
     # while (num > 0) jump
     bgtz s1, L_itoa_loop_start
 L_itoa_loop_end:
+    mv a0, s2
+    mv a1, s3
+    call reverse_char_array
     # buf[i] = 0
     add t0, s2, s3
     sb zero, 0(t0)
@@ -483,4 +506,53 @@ print_newline:
     lw ra, 0(sp)
     addi sp, sp, 16
     ret
+
+# void ()
+print_unknown_chars_colon:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, unknown_chars_15
+    li a2, 15
+    call write
+
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+# void (char* arr, int len)
+reverse_char_array:
+    # a6 = len/2
+    srl a6, a1, 1
+
+    # t0 = i
+    li t0, -1
+L_reverse_char_array_loop_start:
+    addi t0, t0, 1
+    # i >= len/2 return
+    bge t0, a6, L_reverse_char_array_loop_end
+
+    # t1 = len - i - 1
+    sub t1, a1, t0
+    addi t1, t1, -1
+
+    # t2 = ptr to i
+    # t3 = ptr to j
+    add t2, a0, t0
+    add t3, a0, t1
+
+    # t4 = i value
+    # t5 = j value
+    lbu t4, 0(t2)
+    lbu t5, 0(t3)
+
+    sb t4, 0(t3)
+    sb t5, 0(t2)
+
+    j L_reverse_char_array_loop_start
+
+L_reverse_char_array_loop_end:
+    ret
+    
 
