@@ -471,9 +471,13 @@ print_num:
     la a1, itoa_buffer_32
     call itoa
 
+    la a0, itoa_buffer_32
+    call strlen
+    mv t0, a0
+
     li a0, 1
     la a1, itoa_buffer_32
-    li a2, 32
+    mv a2, t0
     call write
 
     lw ra, 0(sp)
