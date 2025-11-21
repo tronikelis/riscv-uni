@@ -38,9 +38,17 @@ itoa_buffer_32:
 unknown_char_count:
     .word 0
 
+ints_arr:
+    .word 0
+
+ints_arr_len:
+    .word 0
+
 .text
 
 _start:
+    call init_ints_arr
+
     call get_filename
     bnez a0, L_start_got_filename
     call panic
@@ -321,6 +329,12 @@ L_get_filename_2:
     lw a0, 8(sp)
     ret
 
+# (void* addr, int len, int prot, int flags, int fd, int offset)
+mmap:
+    li a7, 222
+    ecall
+    ret
+
 # int (int fd, void* buf, int len)
 read:
     li a7, 63
@@ -410,10 +424,43 @@ L_multiply_loop_end:
     mv a0, t1
     ret
 
+# void (int num, char* buf)
+# sets the string representation of num into buf
+# supports negative numbers
+itoa:
+    addi sp, sp, -16
+    sw s2, 8(sp)
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    # s2 = orig buf
+    mv s2, a1
+    # s1: s1 1 if -, 0 if +
+    sltz s1, a0
+    # offset buf by 1 if minus
+    add a1, a1, s1
+    # jump straight to call if unsigned
+    beqz s1, L_itoa_call
+    neg a0, a0
+L_itoa_call:
+    call itoa_unsigned
+    beqz s1, L_itoa_ret
+    # store '-' at the start of buf
+    li t0, 45
+    sb t0, 0(s2)
+    
+L_itoa_ret:
+    lw s2, 8(sp)
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
 
 # void (int num, char* buf)
 # sets the string representation of num into buf
-itoa:
+# does not support minus(-)
+itoa_unsigned:
     addi sp, sp, -16
     sw s3, 12(sp)
     sw s2, 8(sp)
@@ -427,7 +474,7 @@ itoa:
     # s3 = i
     li s3, 0
 
-L_itoa_loop_start:
+L_itoa_unsigned_loop_start:
     # divide(num, 10)
     mv a0, s1
     li a1, 10
@@ -446,8 +493,8 @@ L_itoa_loop_start:
     # num = result
     mv s1, a0
     # while (num > 0) jump
-    bgtz s1, L_itoa_loop_start
-L_itoa_loop_end:
+    bgtz s1, L_itoa_unsigned_loop_start
+L_itoa_unsigned_loop_end:
     mv a0, s2
     mv a1, s3
     call reverse_char_array
@@ -461,6 +508,113 @@ L_itoa_loop_end:
     lw ra, 0(sp)
     addi sp, sp, 16
     ret
+
+
+# int (char* buf, int len)
+# converts buf to signed integer
+# supports negative numbers
+atoi:
+    addi sp, sp, -16
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    # s1 = buf[0]
+    lbu s1, 0(a0)
+    # '-' is 45
+    # s1: 0: number, 1: '-'
+    slti s1, s1, 46
+    # offset buf by 1 if negative
+    add a0, a0, s1
+    call atoi_unsigned
+
+    # negate if s1 = 1
+    beqz s1, L_atoi_ret
+    neg a0, a0
+
+L_atoi_ret:
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+
+
+# int (char* buf, int len)
+# converts buf to unsigned integer
+atoi_unsigned:
+    addi sp, sp, -32
+    sw s7, 28(sp)
+    sw s6, 24(sp)
+    sw s5, 20(sp)
+    sw s4, 16(sp)
+    sw s3, 12(sp)
+    sw s2, 8(sp)
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    # s1 = buf
+    mv s1, a0
+    # s2 = len
+    mv s2, a1
+    # s3 = acc
+    li s3, 0
+    # s4 = i
+    li s4, -1
+L_atoi_unsigned_outer_loop_start:
+    addi s4, s4, 1
+    # if i < len
+    bge s4, s2, L_atoi_unsigned_outer_loop_end
+    
+    # s5/num = buf[i] - '0' (48)
+    add s5, s1, s4
+    lbu s5, 0(s5)
+    addi s5, s5, -48
+    # s6/mul = 1
+    li s6, 1
+    # s7 = j
+    li s7, -1
+    L_atoi_unsigned_inner_loop_start:
+        addi s7, s7, 1
+        # if j < len - 1 - i
+        addi t0, s2, -1
+        sub t0, t0, s4
+        bge s7, t0, L_atoi_unsigned_inner_loop_end
+
+        # mul = multiply(mul, 10)
+        mv a0, s6
+        li a1, 10
+        call multiply   
+        mv s6, a0
+        
+        j L_atoi_unsigned_inner_loop_start
+
+L_atoi_unsigned_inner_loop_end:
+    # num = multiply(num, mul)
+    mv a0, s5
+    mv a1, s6
+    call multiply
+    mv s5, a0
+    # acc += num
+    add s3, s3, s5
+
+    j L_atoi_unsigned_outer_loop_start
+
+L_atoi_unsigned_outer_loop_end:
+    # return acc
+    mv a0, s3
+
+    lw s7, 28(sp)
+    lw s6, 24(sp)
+    lw s5, 20(sp)
+    lw s4, 16(sp)
+    lw s3, 12(sp)
+    lw s2, 8(sp)
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 32
+    ret
+    
+
 
 
 # void (int num)
@@ -559,4 +713,33 @@ L_reverse_char_array_loop_start:
 L_reverse_char_array_loop_end:
     ret
     
+
+init_ints_arr:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 0
+    # prepare 1gb of memory
+    # this does not actually allocate anything
+    # linux will map pages when necessary
+    # meaning we have a kinda dynamic array
+    li a1, 1
+    slli a1, a1, 30
+    li a2, 3 # PROT_READ | PROT_WRITE
+    li a3, 34 # MAP_ANONYMOUS | MAP_PRIVATE
+    li a4, -1 # fd should be -1 on non file maps
+    li a5, 0 # offset is ignored
+    call mmap
+    bgtz a0, L_init_ints_arr_fin
+    call panic
+
+L_init_ints_arr_fin:
+    la t0, ints_arr
+    sw a0, 0(t0)
+    # try no segfault
+    sw zero, 0(a0)
+
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
 
