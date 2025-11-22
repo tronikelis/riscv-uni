@@ -29,9 +29,6 @@ file_buffer_1024:
 
 .data
 
-test_string_3:
-    .string "abc"
-
 freq_arr_40:
     .zero 40
 
@@ -91,6 +88,7 @@ L_read_loop_start:
     j L_read_loop_start
 
 L_read_loop_end:
+    call sort_parsed_numbers
     call print_parsed_numbers
     call print_unknown_char_count
     call print_unique_numbers
@@ -98,6 +96,19 @@ L_read_loop_end:
 
     li a0, 0
     call exit
+
+# void ()
+sort_parsed_numbers:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    lw a0, ints_arr
+    lw a1, ints_arr_len
+    call bubble_sort_int_arr
+
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
 
 # void ()
 print_parsed_numbers:
@@ -682,6 +693,8 @@ atoi:
     slti s1, s1, 46
     # offset buf by 1 if negative
     add a0, a0, s1
+    # offset len by -1 if negative
+    sub a1, a1, s1
     call atoi_unsigned
 
     # negate if s1 = 1
@@ -915,4 +928,42 @@ push_int:
 
     ret
 
+# void (int* buf, int len)
+bubble_sort_int_arr:
+    # if len <= 1 return
+    li t0, 1
+    bgt a1, t0, L_bubble_sort_int_arr_init
+    ret
 
+L_bubble_sort_int_arr_init:
+    # t0 = i
+    li t0, -1
+L_bubble_sort_int_arr_outer_loop_start:
+    addi t0, t0, 1
+    # t1 = len - 1
+    addi t1, a1, -1
+    # i < len - 1
+    bge t0, t1, L_bubble_sort_int_arr_outer_loop_end
+
+    # t1 = j = i + 1
+    mv t1, t0
+    L_bubble_sort_int_arr_inner_loop_start:
+        addi t1, t1, 1
+        # j < len
+        bge t1, a1, L_bubble_sort_int_arr_outer_loop_start
+        # t3 = buf[i]
+        slli t2, t0, 2
+        add t2, a0, t2
+        lw t3, 0(t2)
+        # t5 = buf[j]
+        slli t4, t1, 2
+        add t4, a0, t4
+        lw t5, 0(t4)
+        # swap if t3 > t5
+        ble t3, t5, L_bubble_sort_int_arr_inner_loop_start
+        sw t3, 0(t4)
+        sw t5, 0(t2)
+        j L_bubble_sort_int_arr_inner_loop_start
+
+L_bubble_sort_int_arr_outer_loop_end:
+    ret
