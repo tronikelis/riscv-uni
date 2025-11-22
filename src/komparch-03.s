@@ -17,6 +17,9 @@ unique_numbers_8:
 unknown_chars_15:
     .string "unknown chars: "
 
+parsed_numbers_16:
+    .string "parsed numbers: "
+
 .bss
 
 .align 4
@@ -42,6 +45,12 @@ ints_arr:
     .word 0
 
 ints_arr_len:
+    .word 0
+
+atoi_buffer_32:
+    .zero 32
+
+atoi_buffer_32_len:
     .word 0
 
 .text
@@ -75,15 +84,151 @@ L_read_loop_start:
     mv a1, s2
     call set_frequencies
 
+    la a0, file_buffer_1024
+    mv a1, s2
+    call parse_buffer
+
     j L_read_loop_start
 
 L_read_loop_end:
+    call print_parsed_numbers
     call print_unknown_char_count
     call print_unique_numbers
     call print_frequencies
 
     li a0, 0
     call exit
+
+# void ()
+print_parsed_numbers:
+    addi sp, sp, -16
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    call print_parsed_numbers_colon
+    call print_newline
+
+    # s1 = i
+    li s1, -1
+L_print_parsed_numbers_loop_start:
+    addi s1, s1, 1
+    lw t0, ints_arr_len
+    bge s1, t0, L_print_parsed_numbers_loop_end
+
+    # a0 = ints_arr[i]
+    lw a0, ints_arr
+    slli t1, s1, 2
+    add a0, a0, t1
+    lw a0, 0(a0)
+
+    call print_num
+    call print_newline
+
+    j L_print_parsed_numbers_loop_start
+
+L_print_parsed_numbers_loop_end:
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+    
+
+
+
+
+# void (char* buf, int len)
+parse_buffer:
+    addi sp, sp, -32
+    sw s4, 16(sp)
+    sw s3, 12(sp)
+    sw s2, 8(sp)
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    # s1 = i
+    li s1, -1
+    # s2 = buf
+    mv s2, a0
+    # s3 = len
+    mv s3, a1
+    # s4 = 1: '-', 0: positive
+    li s4, 0
+L_parse_buffer_loop_start:
+    addi s1, s1, 1
+    bge s1, s3, L_parse_buffer_loop_end
+
+    # push num if actual num
+    add a0, s2, s1
+    lbu a0, 0(a0)
+    call is_num
+    bnez a0, L_parse_buffer_loop_numlike
+
+    # push minus if minus
+    add t0, s2, s1
+    lbu t0, 0(t0)
+    li t1, 45
+    beq t0, t1, L_parse_buffer_loop_numlike
+
+    # here we have buf[i] not a number, not a minus
+    # if (atoi_buffer_32_len - is_minus <= 0) continue
+    lw t0, atoi_buffer_32_len
+    # len = len - 1/0
+    sub t0, t0, s4
+    bgtz t0, L_parse_buffer_loop_push_arr
+
+    # in this path, we have a ['-'] / [] buf
+    la t0, atoi_buffer_32_len
+    sw zero, 0(t0)
+    j L_parse_buffer_loop_start
+    
+L_parse_buffer_loop_push_arr:
+    # append(ints_arr, atoi(atoi_buffer_32, atoi_buffer_32_len))
+
+    la a0, atoi_buffer_32
+    lw a1, atoi_buffer_32_len
+    call atoi
+    call push_int
+
+    la t0, atoi_buffer_32_len
+    sw zero, 0(t0)
+    j L_parse_buffer_loop_start 
+
+L_parse_buffer_loop_numlike:
+    la t0, atoi_buffer_32
+    lw t1, atoi_buffer_32_len
+
+    # t3 = buf[i]
+    add t3, s2, s1
+    lbu t3, 0(t3)
+
+    # s4 = 1/0, based on minus or not minus
+    slti s4, t3, 46
+    # if (is_minus) atoi_buffer_32_len = 0
+    beqz s4, L_parse_buffer_loop_numlike_fin
+    li t1, 0
+
+L_parse_buffer_loop_numlike_fin:
+    # atoi_buffer_32[atoi_buffer_32_len] = buf[i]
+    add t4, t0, t1
+    sb t3, 0(t4)
+
+    # atoi_buffer_32_len++
+    addi t1, t1, 1
+    la t0, atoi_buffer_32_len
+    sw t1, 0(t0)
+
+    j L_parse_buffer_loop_start
+
+L_parse_buffer_loop_end:
+    lw s4, 16(sp)
+    lw s3, 12(sp)
+    lw s2, 8(sp)
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 32
+    ret
+
+
 
 print_unknown_char_count:
     addi sp, sp, -16
@@ -152,6 +297,18 @@ print_unique_colon:
     addi sp, sp, 16
     ret
     
+print_parsed_numbers_colon:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, parsed_numbers_16
+    li a2, 16
+    call write
+    
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
 
 # void ()
 print_frequencies:
@@ -742,4 +899,20 @@ L_init_ints_arr_fin:
     lw ra, 0(sp)
     addi sp, sp, 16
     ret
+
+# void (int num)
+push_int:
+    lw t0, ints_arr
+    lw t1, ints_arr_len
+    slli t2, t1, 2
+
+    add t3, t0, t2
+    sw a0, 0(t3)
+
+    addi t1, t1, 1
+    la t0, ints_arr_len
+    sw t1, 0(t0)
+
+    ret
+
 
