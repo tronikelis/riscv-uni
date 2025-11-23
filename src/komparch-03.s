@@ -474,8 +474,19 @@ L_set_frequencies_loop_start:
 
 L_set_frequencies_minus_one:
     # not a number path here
+
+    # skip if '-'
+    # t0 = buf + i
+    add t0, s3, s1
+    # t0 = *t0
+    lbu t0, 0(t0)
+    li t1, 45
+    beq t0, t1, L_set_frequencies_loop_start
+
+    # not a number + not '-' here
     la a0, unknown_char_count
     call deref_increment
+
     j L_set_frequencies_loop_start
 
 L_set_frequencies_ret:
