@@ -7,6 +7,8 @@ CLANG = clang -target riscv32-unknown-linux-gnu \
 	-fno-builtin \
 	-nostdlib \
 	-fno-stack-protector \
+	-O0 \
+	-g \
 	$(STD_C)
 
 
