@@ -6,8 +6,10 @@
 
 panic_msg_6:
     .string "PANIC\n"
+
 newline_1:
     .string "\n"
+
 colon_space_2:
     .string ": "
 
@@ -19,6 +21,15 @@ unknown_chars_15:
 
 parsed_numbers_16:
     .string "parsed numbers: "
+
+open_err_14:
+    .string "cant open file"
+
+read_err_15:
+    .string "read file error"
+
+get_filename_err_18:
+    .string "get filename error"
 
 .bss
 
@@ -57,11 +68,16 @@ _start:
 
     call get_filename
     bnez a0, L_start_got_filename
+    call print_get_filename_err
+    call print_newline
     call panic
+
 L_start_got_filename:
     # a0 = char* filename
     call open_filename
     bgez a0, L_read_loop
+    call print_open_err
+    call print_newline
     call panic
 
 L_read_loop:
@@ -75,7 +91,8 @@ L_read_loop_start:
     # s2 = how many bytes read
     mv s2, a0
 
-    blez a0, L_read_loop_end
+    bltz a0, L_read_loop_err # -1 read error
+    beqz a0, L_read_loop_end # 0 eof
 
     la a0, file_buffer_1024
     mv a1, s2
@@ -94,8 +111,17 @@ L_read_loop_end:
     call print_unique_numbers
     call print_frequencies
 
+    # close(fd)
+    mv a0, s1
+    call close
+
     li a0, 0
     call exit
+
+L_read_loop_err:
+    call print_read_err
+    call print_newline
+    call panic
 
 # void ()
 sort_parsed_numbers:
@@ -308,6 +334,45 @@ print_unique_colon:
     addi sp, sp, 16
     ret
     
+print_open_err:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, open_err_14
+    li a2, 14
+    call write
+    
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+print_read_err:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, read_err_15
+    li a2, 15
+    call write
+    
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+print_get_filename_err:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, get_filename_err_18
+    li a2, 18
+    call write
+    
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
 print_parsed_numbers_colon:
     addi sp, sp, -16
     sw ra, 0(sp)
@@ -515,6 +580,13 @@ write:
     li a7, 64
     ecall
     ret
+
+# void (int fd)
+close:
+    li a7, 57
+    ecall
+    ret
+
 
 # void (int status)
 exit:
