@@ -396,10 +396,11 @@ print_frequencies:
 
 
     # s1 = i
-    li s1, 10
+    li s1, -1
 L_print_frequencies_loop_start:
-    addi s1, s1, -1
-    bltz s1, L_print_frequencies_ret
+    addi s1, s1, 1
+    li t0, 10
+    bge s1, t0, L_print_frequencies_ret
 
     # [i]: 
     mv a0, s1
