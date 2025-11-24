@@ -4,34 +4,34 @@
 
 .section .rodata
 
-panic_msg_6:
+str_panic:
     .string "PANIC\n"
 
-newline_1:
+str_newline:
     .string "\n"
 
-colon_space_2:
+str_colon_space:
     .string ": "
 
-unique_numbers_27:
+str_unique_numbers:
     .string "Rasta skirtingu skaitmenu: "
 
-unknown_chars_26:
+str_unknown_chars:
     .string "Rasta neskaiciu simboliu: "
 
-parsed_numbers_21:
+str_parsed_numbers:
     .string "Surusiuoti skaiciai: "
 
-their_frequency_24:
+str_their_frequency:
     .string "Ju pasirodymo daznumas: "
 
-open_err_14:
+str_open_err:
     .string "cant open file"
 
-read_err_15:
+str_read_err:
     .string "read file error"
 
-get_filename_err_18:
+str_get_filename_err:
     .string "get filename error"
 
 .section .bss
@@ -71,16 +71,20 @@ _start:
 
     call get_filename
     bnez a0, L_start_got_filename
-    call print_get_filename_err
-    call print_newline
+    la a0, str_get_filename_err
+    call print_str
+    la a0, str_newline
+    call print_str
     call panic
 
 L_start_got_filename:
     # a0 = char* filename
     call open_filename
     bgez a0, L_read_loop
-    call print_open_err
-    call print_newline
+    la a0, str_open_err
+    call print_str
+    la a0, str_newline
+    call print_str
     call panic
 
 L_read_loop:
@@ -112,8 +116,10 @@ L_read_loop_end:
     call print_parsed_numbers
     call print_unique_numbers
 
-    call print_their_frequency
-    call print_newline
+    la a0, str_their_frequency
+    call print_str
+    la a0, str_newline
+    call print_str
 
     call print_frequencies
     call print_unknown_char_count
@@ -126,8 +132,10 @@ L_read_loop_end:
     call exit
 
 L_read_loop_err:
-    call print_read_err
-    call print_newline
+    la a0, str_read_err
+    call print_str
+    la a0, str_newline
+    call print_str
     call panic
 
 # void ()
@@ -149,8 +157,10 @@ print_parsed_numbers:
     sw s1, 4(sp)
     sw ra, 0(sp)
 
-    call print_parsed_numbers_colon
-    call print_newline
+    la a0, str_parsed_numbers
+    call print_str
+    la a0, str_newline
+    call print_str
 
     # s1 = i
     li s1, -1
@@ -166,7 +176,8 @@ L_print_parsed_numbers_loop_start:
     lw a0, 0(a0)
 
     call print_num
-    call print_newline
+    la a0, str_newline
+    call print_str
 
     j L_print_parsed_numbers_loop_start
 
@@ -278,10 +289,12 @@ print_unknown_char_count:
     addi sp, sp, -16
     sw ra, 0(sp)
 
-    call print_unknown_chars_colon
+    la a0, str_unknown_chars
+    call print_str
     lw a0, unknown_char_count
     call print_num
-    call print_newline
+    la a0, str_newline
+    call print_str
 
     lw ra, 0(sp)
     addi sp, sp, 16
@@ -316,79 +329,15 @@ L_print_unique_numbers_loop_start:
     j L_print_unique_numbers_loop_start
     
 L_print_unique_numbers_end:
-    call print_unique_colon
+    la a0, str_unique_numbers
+    call print_str
     mv a0, s2
     call print_num
-    call print_newline
+    la a0, str_newline
+    call print_str
 
     lw s2, 8(sp)
     lw s1, 4(sp)
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-
-print_unique_colon:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, unique_numbers_27
-    li a2, 27
-    call write
-    
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-    
-print_open_err:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, open_err_14
-    li a2, 14
-    call write
-    
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-print_read_err:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, read_err_15
-    li a2, 15
-    call write
-    
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-print_get_filename_err:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, get_filename_err_18
-    li a2, 18
-    call write
-    
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-print_parsed_numbers_colon:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, parsed_numbers_21
-    li a2, 21
-    call write
-    
     lw ra, 0(sp)
     addi sp, sp, 16
     ret
@@ -412,7 +361,8 @@ L_print_frequencies_loop_start:
     # [i]: 
     mv a0, s1
     call print_num
-    call print_colon_space
+    la a0, str_colon_space
+    call print_str
     
 
     # index
@@ -422,7 +372,8 @@ L_print_frequencies_loop_start:
 
     lw a0, 0(t0)
     call print_num
-    call print_newline
+    la a0, str_newline
+    call print_str
     j L_print_frequencies_loop_start
 
 L_print_frequencies_ret:
@@ -614,10 +565,8 @@ exit:
 
 # void ()
 panic:
-    li a0, 1
-    la a1, panic_msg_6
-    li a2, 6
-    call write
+    la a0, str_panic
+    call print_str
     li a0, 1
     call exit
 
@@ -899,60 +848,6 @@ print_num:
     addi sp, sp, 16
     ret
 
-print_colon_space:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, colon_space_2
-    li a2, 2
-    call write
-    
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-print_their_frequency:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, their_frequency_24
-    li a2, 24
-    call write
-    
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-# void ()
-print_newline:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, newline_1
-    li a2, 1
-    call write
-
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
-# void ()
-print_unknown_chars_colon:
-    addi sp, sp, -16
-    sw ra, 0(sp)
-
-    li a0, 1
-    la a1, unknown_chars_26
-    li a2, 26
-    call write
-
-    lw ra, 0(sp)
-    addi sp, sp, 16
-    ret
-
 # void (char* arr, int len)
 reverse_char_array:
     # a6 = len/2
@@ -1071,3 +966,25 @@ L_bubble_sort_int_arr_outer_loop_start:
 
 L_bubble_sort_int_arr_outer_loop_end:
     ret
+
+# void (char* str)
+print_str:
+    addi sp, sp, -16
+    sw s1, 4(sp)
+    sw ra, 0(sp)
+
+    mv s1, a0
+    call strlen
+    # t0 = int strlen
+    mv t0, a0
+
+    li a0, 1
+    mv a1, s1
+    mv a2, t0
+    call write
+
+    lw s1, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
