@@ -2,7 +2,7 @@
 
 .global _start
 
-.rodata
+.section .rodata
 
 panic_msg_6:
     .string "PANIC\n"
@@ -13,14 +13,17 @@ newline_1:
 colon_space_2:
     .string ": "
 
-unique_numbers_8:
-    .string "unique: "
+unique_numbers_27:
+    .string "Rasta skirtingu skaitmenu: "
 
-unknown_chars_15:
-    .string "unknown chars: "
+unknown_chars_26:
+    .string "Rasta neskaiciu simboliu: "
 
-parsed_numbers_16:
-    .string "parsed numbers: "
+parsed_numbers_21:
+    .string "Surusiuoti skaiciai: "
+
+their_frequency_24:
+    .string "Ju pasirodymo daznumas: "
 
 open_err_14:
     .string "cant open file"
@@ -31,14 +34,14 @@ read_err_15:
 get_filename_err_18:
     .string "get filename error"
 
-.bss
+.section .bss
 
-.align 4
+.align 16
 
 file_buffer_1024:
     .space 1024
 
-.data
+.section .data
 
 freq_arr_40:
     .zero 40
@@ -61,7 +64,7 @@ atoi_buffer_32:
 atoi_buffer_32_len:
     .word 0
 
-.text
+.section .text
 
 _start:
     call init_ints_arr
@@ -107,9 +110,13 @@ L_read_loop_start:
 L_read_loop_end:
     call sort_parsed_numbers
     call print_parsed_numbers
-    call print_unknown_char_count
     call print_unique_numbers
+
+    call print_their_frequency
+    call print_newline
+
     call print_frequencies
+    call print_unknown_char_count
 
     # close(fd)
     mv a0, s1
@@ -326,8 +333,8 @@ print_unique_colon:
     sw ra, 0(sp)
 
     li a0, 1
-    la a1, unique_numbers_8
-    li a2, 8
+    la a1, unique_numbers_27
+    li a2, 27
     call write
     
     lw ra, 0(sp)
@@ -378,8 +385,8 @@ print_parsed_numbers_colon:
     sw ra, 0(sp)
 
     li a0, 1
-    la a1, parsed_numbers_16
-    li a2, 16
+    la a1, parsed_numbers_21
+    li a2, 21
     call write
     
     lw ra, 0(sp)
@@ -905,6 +912,19 @@ print_colon_space:
     addi sp, sp, 16
     ret
 
+print_their_frequency:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+
+    li a0, 1
+    la a1, their_frequency_24
+    li a2, 24
+    call write
+    
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
 # void ()
 print_newline:
     addi sp, sp, -16
@@ -925,8 +945,8 @@ print_unknown_chars_colon:
     sw ra, 0(sp)
 
     li a0, 1
-    la a1, unknown_chars_15
-    li a2, 15
+    la a1, unknown_chars_26
+    li a2, 26
     call write
 
     lw ra, 0(sp)
