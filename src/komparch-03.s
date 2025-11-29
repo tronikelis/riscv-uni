@@ -128,6 +128,12 @@ L_read_loop_end:
     mv a0, s1
     call close
 
+    # munmap(arr, 1<<30)
+    lw a0, ints_arr
+    li a1, 1
+    slli a1, a1, 30
+    call munmap
+
     li a0, 0
     call exit
 
@@ -532,9 +538,15 @@ L_get_filename_2:
     lw a0, 8(sp)
     ret
 
-# (void* addr, int len, int prot, int flags, int fd, int offset)
+# void* (void* addr, int len, int prot, int flags, int fd, int offset)
 mmap:
     li a7, 222
+    ecall
+    ret
+
+# void* (void* addr, int len) 
+munmap:
+    li a7, 215
     ecall
     ret
 
